@@ -163,15 +163,23 @@ npm install -D typescript @types/node @tsconfig/node24
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "ignoreDeprecations": "6.0"
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }
 ```
 
-> **`ignoreDeprecations: "6.0"`** silencia warnings de opções deprecated no TS 6 (necessário enquanto `tsup` injeta `baseUrl` ao gerar `.d.ts`). Pode ser removido em TS 7.
+> **Boa prática extra:** o arquivo `.vscode/settings.json` aponta o TSDK do workspace para o editor usar a mesma versão do TypeScript do projeto (evita divergência entre o que o Cursor mostra e o que o `tsc` reporta):
+>
+> ```json
+> {
+>   "typescript.tsdk": "node_modules/typescript/lib",
+>   "typescript.enablePromptUseWorkspaceTsdk": true
+> }
+> ```
+>
+> Depois rode no Command Palette: **TypeScript: Select TypeScript Version → Use Workspace Version**.
 
 **Path aliases (`paths`):** evitam imports relativos longos (`../../../lib/logger`). Com a config acima você importa assim:
 
@@ -227,12 +235,14 @@ export default defineConfig({
   outDir: "dist",
   clean: true,
   sourcemap: true,
-  dts: true,
+  dts: false,
   minify: false,
   treeshake: true,
   splitting: false,
 });
 ```
+
+> **Por que `dts: false`?** Em uma **aplicação** (não biblioteca) os `.d.ts` no `dist/` são inúteis — ninguém vai consumir tipos do app. Desligar evita problemas como o `baseUrl` deprecated injetado pelo `tsup` ao rodar o passo de DTS. Se um dia este pacote virar lib publicada no npm, mude para `dts: true`.
 
 **Uso:** `npm run build && npm start`
 
